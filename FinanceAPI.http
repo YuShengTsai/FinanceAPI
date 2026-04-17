@@ -1,20 +1,28 @@
 @FinanceAPI_HostAddress = http://localhost:5097
 
+### ========================
+### Happy Path
+### ========================
+
+### 查詢帳戶資料
 GET {{FinanceAPI_HostAddress}}/api/accounts/1
 Accept: application/json
 
 ###
 
+### 查詢餘額
 GET {{FinanceAPI_HostAddress}}/api/accounts/1/balance
 Accept: application/json
 
 ###
 
+### 查詢帳戶交易明細
 GET {{FinanceAPI_HostAddress}}/api/accounts/1/transactions
 Accept: application/json
 
 ###
 
+### 存款成功
 POST {{FinanceAPI_HostAddress}}/api/accounts/1/deposit
 Content-Type: application/json
 
@@ -24,6 +32,7 @@ Content-Type: application/json
 
 ###
 
+### 提款成功
 POST {{FinanceAPI_HostAddress}}/api/accounts/1/withdraw
 Content-Type: application/json
 
@@ -33,23 +42,172 @@ Content-Type: application/json
 
 ###
 
+### 轉帳成功
+POST {{FinanceAPI_HostAddress}}/api/transfers
+Content-Type: application/json
+
+{
+  "fromAccountId": 1,
+  "toAccountId": 3,
+  "amount": 500.00
+}
+
+###
+
+### 查詢單筆轉帳紀錄
+GET {{FinanceAPI_HostAddress}}/api/transfers/1
+Accept: application/json
+
+###
+
+### 查詢單筆交易明細
+GET {{FinanceAPI_HostAddress}}/api/transactions/1
+Accept: application/json
+
+###
+
+### ========================
+### Validation Tests
+### ========================
+
+### 存款金額為 0
+POST {{FinanceAPI_HostAddress}}/api/accounts/1/deposit
+Content-Type: application/json
+
+{
+  "amount": 0
+}
+
+###
+
+### 存款金額小於 0
+POST {{FinanceAPI_HostAddress}}/api/accounts/1/deposit
+Content-Type: application/json
+
+{
+  "amount": -100
+}
+
+###
+
+### 提款金額為 0
+POST {{FinanceAPI_HostAddress}}/api/accounts/1/withdraw
+Content-Type: application/json
+
+{
+  "amount": 0
+}
+
+###
+
+### 轉帳給自己
+POST {{FinanceAPI_HostAddress}}/api/transfers
+Content-Type: application/json
+
+{
+  "fromAccountId": 1,
+  "toAccountId": 1,
+  "amount": 100.00
+}
+
+###
+
+### 轉帳金額為 0
 POST {{FinanceAPI_HostAddress}}/api/transfers
 Content-Type: application/json
 
 {
   "fromAccountId": 1,
   "toAccountId": 2,
-  "amount": 500.00
+  "amount": 0
 }
 
 ###
 
-GET {{FinanceAPI_HostAddress}}/api/transfers/1
+### 轉帳帳戶編號無效
+POST {{FinanceAPI_HostAddress}}/api/transfers
+Content-Type: application/json
+
+{
+  "fromAccountId": 0,
+  "toAccountId": 0,
+  "amount": 100.00
+}
+
+###
+
+### 轉帳金額型別錯誤
+POST {{FinanceAPI_HostAddress}}/api/transfers
+Content-Type: application/json
+
+{
+  "fromAccountId": 1,
+  "toAccountId": 2,
+  "amount": "abc"
+}
+
+###
+
+### ========================
+### Business Error Tests
+### ========================
+
+### 查詢不存在的帳戶資料
+GET {{FinanceAPI_HostAddress}}/api/accounts/999999
 Accept: application/json
 
 ###
 
-GET {{FinanceAPI_HostAddress}}/api/transactions/1
+### 查詢不存在帳戶的餘額
+GET {{FinanceAPI_HostAddress}}/api/accounts/999999/balance
+Accept: application/json
+
+###
+
+### 查詢不存在帳戶的交易明細
+GET {{FinanceAPI_HostAddress}}/api/accounts/999999/transactions
+Accept: application/json
+
+###
+
+### 對不存在的帳戶存款
+POST {{FinanceAPI_HostAddress}}/api/accounts/999999/deposit
+Content-Type: application/json
+
+{
+  "amount": 1000.00
+}
+
+###
+
+### 對不存在的帳戶提款
+POST {{FinanceAPI_HostAddress}}/api/accounts/999999/withdraw
+Content-Type: application/json
+
+{
+  "amount": 1000.00
+}
+
+###
+
+### 提款超過餘額
+POST {{FinanceAPI_HostAddress}}/api/accounts/1/withdraw
+Content-Type: application/json
+
+{
+  "amount": 99999999.00
+}
+
+###
+
+### 查詢不存在的轉帳紀錄
+GET {{FinanceAPI_HostAddress}}/api/transfers/999999
+Accept: application/json
+
+###
+
+### 查詢不存在的交易明細
+GET {{FinanceAPI_HostAddress}}/api/transactions/999999
 Accept: application/json
 
 ###

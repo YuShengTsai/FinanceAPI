@@ -15,4 +15,10 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="FinanceAPI.Tests\**\*.cs" />
+    <EmbeddedResource Remove="FinanceAPI.Tests\**\*" />
+    <None Remove="FinanceAPI.Tests\**\*" />
+  </ItemGroup>
+
 </Project>

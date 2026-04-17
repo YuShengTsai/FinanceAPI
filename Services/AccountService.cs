@@ -55,7 +55,7 @@ public class AccountService : IAccountService
             return new OperationResult
             {
                 Success = false,
-                Message = "Account not found."
+                Message = "找不到帳戶。"
             };
         }
 
@@ -76,7 +76,7 @@ public class AccountService : IAccountService
         return new OperationResult
         {
             Success = true,
-            Message = "Deposit completed successfully.",
+            Message = "存款成功。",
             TransactionId = transaction.TransactionId,
             Balance = account.Balance
         };
@@ -91,7 +91,7 @@ public class AccountService : IAccountService
             return new OperationResult
             {
                 Success = false,
-                Message = "Account not found."
+                Message = "找不到帳戶。"
             };
         }
 
@@ -100,7 +100,7 @@ public class AccountService : IAccountService
             return new OperationResult
             {
                 Success = false,
-                Message = "Insufficient balance.",
+                Message = "帳戶餘額不足。",
                 Balance = account.Balance
             };
         }
@@ -122,7 +122,7 @@ public class AccountService : IAccountService
         return new OperationResult
         {
             Success = true,
-            Message = "Withdraw completed successfully.",
+            Message = "提款成功。",
             TransactionId = transaction.TransactionId,
             Balance = account.Balance
         };

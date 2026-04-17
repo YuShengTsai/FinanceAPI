@@ -61,6 +61,11 @@ public class AccountsController : ControllerBase
 
         if (!result.Success)
         {
+            if (string.Equals(result.Message, "找不到帳戶。", StringComparison.Ordinal))
+            {
+                return NotFound(result);
+            }
+
             return BadRequest(result);
         }
 
@@ -74,7 +79,7 @@ public class AccountsController : ControllerBase
 
         if (!result.Success)
         {
-            if (string.Equals(result.Message, "Account not found.", StringComparison.Ordinal))
+            if (string.Equals(result.Message, "找不到帳戶。", StringComparison.Ordinal))
             {
                 return NotFound(result);
             }

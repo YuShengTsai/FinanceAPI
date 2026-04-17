@@ -1,41 +1,79 @@
 # FinanceAPI
 
-簡單 ATM 系統示範 API，使用 `.NET 8 Web API`、`EF Core SqlServer` 與 `Swagger` 建立。
+## 1. Overview
 
-目前這個版本以 ATM 常見功能為主：
+`FinanceAPI` 為一個以 `.NET 8 Web API` 建置的簡易數位金融 / ATM 系統示範專案。  
+本專案以帳戶查詢、餘額查詢、存款、提款、轉帳與交易明細查詢為核心功能，並作為後續整合 `React`、`Redis`、`Kafka`、`Docker` 與 `AWS` 的基礎系統。
 
-- 查詢帳戶資料
-- 查詢餘額
-- 存款
-- 提款
-- 轉帳
-- 查詢帳戶交易明細
-- 查詢單筆交易明細
-- 查詢單筆轉帳紀錄
+## 2. Objectives
 
-## 專案技術
+本專案目標如下：
+
+- 建立具備基本金融交易流程的後端 API
+- 提供可擴充的 Service Layer 架構
+- 作為後續快取、事件流與雲端部署的實驗基底
+- 作為 side project / portfolio 展示用專案
+
+## 3. Technology Stack
 
 - .NET 8 Web API
 - Entity Framework Core 8
 - SQL Server
 - Swagger / OpenAPI
+- xUnit
 
-## 專案結構
+## 4. Current Functional Scope
 
-- `Controllers/`
-  - API 路由與 HTTP 回應處理
-- `Services/`
-  - 商業邏輯與資料流程
-- `Data/`
-  - `AppDbContext`
-- `Models/`
-  - Entity 與 request/response DTO
+目前已完成之功能如下：
 
-## 執行方式
+### 4.1 Account APIs
 
-請先確認 `appsettings.json` 或 `appsettings.Development.json` 內的 SQL Server 連線字串正確。
+- 查詢帳戶資料
+- 查詢餘額
+- 查詢帳戶交易明細
+- 存款
+- 提款
 
-建議公開 repo 使用通用設定，例如：
+### 4.2 Transfer APIs
+
+- 執行轉帳
+- 查詢單筆轉帳紀錄
+
+### 4.3 Transaction APIs
+
+- 查詢單筆交易明細
+
+## 5. Project Structure
+
+```text
+FinanceAPI
+├─ Controllers/
+├─ Data/
+├─ Extensions/
+├─ Models/
+├─ Services/
+├─ FinanceAPI.Tests/
+├─ README.md
+├─ PROJECT_PLAN.md
+└─ TESTING.md
+```
+
+目錄說明如下：
+
+- `Controllers/`：API 路由與 HTTP 回應處理
+- `Services/`：業務邏輯與服務層
+- `Data/`：`AppDbContext` 與資料存取設定
+- `Models/`：Entity、DTO 與 API response model
+- `Extensions/`：應用程式擴充設定，例如例外處理與 validation pipeline
+- `FinanceAPI.Tests/`：自動測試專案
+
+## 6. Runtime Configuration
+
+### 6.1 Connection String
+
+專案透過 `appsettings.json` 或 `appsettings.Development.json` 讀取 SQL Server 連線字串。
+
+公開 repo 建議使用通用範例設定：
 
 ```json
 "ConnectionStrings": {
@@ -43,30 +81,13 @@
 }
 ```
 
-如果你是本機開發，可以把自己的實際連線字串放在 `appsettings.Development.json`。
+個人開發環境實際設定應放置於本機開發設定檔，不建議將個人機器名稱直接提交至公開 repository。
 
-在專案根目錄執行：
+## 7. Data Model
 
-```powershell
-dotnet run
-```
+### 7.1 Accounts
 
-開發時也可以使用：
-
-```powershell
-dotnet watch run
-```
-
-啟動後可使用 Swagger 測試：
-
-- `http://localhost:5097/swagger`
-- `https://localhost:7200/swagger`
-
-## 資料表
-
-### Accounts
-
-| 欄位 | 型別 |
+| Column | Type |
 | --- | --- |
 | AccountId | int |
 | CustomerId | int |
@@ -75,9 +96,9 @@ dotnet watch run
 | Currency | nvarchar |
 | CreatedAt | datetime |
 
-### Transactions
+### 7.2 Transactions
 
-| 欄位 | 型別 |
+| Column | Type |
 | --- | --- |
 | TransactionId | int |
 | AccountId | int |
@@ -86,9 +107,9 @@ dotnet watch run
 | Status | nvarchar |
 | CreatedAt | datetime |
 
-### TransferDetails
+### 7.3 TransferDetails
 
-| 欄位 | 型別 |
+| Column | Type |
 | --- | --- |
 | TransferId | int |
 | FromAccountId | int |
@@ -96,245 +117,105 @@ dotnet watch run
 | Amount | decimal |
 | CreatedAt | datetime |
 
-## API 一覽
+## 8. API Specification Summary
 
-### Accounts
+### 8.1 Accounts
 
-#### 1. 查詢帳戶資料
+| Method | Route | Description |
+| --- | --- | --- |
+| GET | `/api/accounts/{accountId}` | 查詢帳戶資料 |
+| GET | `/api/accounts/{accountId}/balance` | 查詢帳戶餘額 |
+| GET | `/api/accounts/{accountId}/transactions` | 查詢帳戶交易明細 |
+| POST | `/api/accounts/{accountId}/deposit` | 執行存款 |
+| POST | `/api/accounts/{accountId}/withdraw` | 執行提款 |
 
-`GET /api/accounts/{accountId}`
+### 8.2 Transfers
 
-範例：
+| Method | Route | Description |
+| --- | --- | --- |
+| POST | `/api/transfers` | 執行轉帳 |
+| GET | `/api/transfers/{transferId}` | 查詢單筆轉帳紀錄 |
 
-```http
-GET /api/accounts/1
+### 8.3 Transactions
+
+| Method | Route | Description |
+| --- | --- | --- |
+| GET | `/api/transactions/{transactionId}` | 查詢單筆交易明細 |
+
+## 9. Transfer Mechanism
+
+轉帳功能透過 SQL Server stored procedure `TransferMoney` 執行。  
+目前 API 呼叫方式為：
+
+- 輸入參數：
+  - `@FromAccountId`
+  - `@ToAccountId`
+  - `@Amount`
+- 輸出參數：
+  - `@ResultCode`
+  - `@ResultMessage`
+
+## 10. Error Handling and Validation
+
+目前後端已具備以下基礎穩定化能力：
+
+- 全域例外處理
+- `ValidationProblemDetails` 驗證錯誤格式
+- 繁體中文錯誤訊息
+- 基本交易輸入驗證
+
+## 11. Execution
+
+### 11.1 Start Application
+
+```powershell
+dotnet run
 ```
 
-成功回應：
+### 11.2 Development Mode
 
-```json
-{
-  "accountId": 1,
-  "customerId": 1001,
-  "accountNumber": "ACC-0001",
-  "balance": 10000.50,
-  "currency": "TWD",
-  "createdAt": "2026-04-17T10:00:00"
-}
+```powershell
+dotnet watch run
 ```
 
-#### 2. 查詢餘額
+### 11.3 Swagger
 
-`GET /api/accounts/{accountId}/balance`
+- `http://localhost:5097/swagger`
+- `https://localhost:7200/swagger`
 
-範例：
+## 12. Testing References
 
-```http
-GET /api/accounts/1/balance
-```
+測試相關文件如下：
 
-成功回應：
+- `TESTING.md`：測試規格
+- `FinanceAPI.http`：手動 API 回歸測試請求檔
+- `FinanceAPI.Tests/`：自動測試專案
 
-```json
-{
-  "accountId": 1,
-  "accountNumber": "ACC-0001",
-  "balance": 10000.50,
-  "currency": "TWD"
-}
-```
+## 13. Project Planning References
 
-#### 3. 查詢帳戶交易明細
+規劃文件如下：
 
-`GET /api/accounts/{accountId}/transactions`
+- `PROJECT_PLAN.md`：整體發展規劃與技術里程碑
 
-範例：
+## 14. Current Limitations
 
-```http
-GET /api/accounts/1/transactions
-```
+目前版本仍屬簡化示範系統，尚未涵蓋：
 
-成功回應：
+- Authentication / Authorization
+- Frontend application
+- Redis cache integration
+- Kafka event-driven workflow
+- Dockerized full-stack runtime
+- AWS deployment
+- Integration test coverage
 
-```json
-[
-  {
-    "transactionId": 10,
-    "accountId": 1,
-    "type": "Deposit",
-    "amount": 1000.00,
-    "status": "Success",
-    "createdAt": "2026-04-17T10:10:00"
-  },
-  {
-    "transactionId": 9,
-    "accountId": 1,
-    "type": "Withdraw",
-    "amount": 500.00,
-    "status": "Success",
-    "createdAt": "2026-04-17T10:05:00"
-  }
-]
-```
+## 15. Future Direction
 
-#### 4. 存款
+後續規劃將依序導入：
 
-`POST /api/accounts/{accountId}/deposit`
-
-Request Body：
-
-```json
-{
-  "amount": 1000.00
-}
-```
-
-成功回應：
-
-```json
-{
-  "success": true,
-  "message": "Deposit completed successfully.",
-  "transactionId": 11,
-  "balance": 11000.50
-}
-```
-
-#### 5. 提款
-
-`POST /api/accounts/{accountId}/withdraw`
-
-Request Body：
-
-```json
-{
-  "amount": 500.00
-}
-```
-
-成功回應：
-
-```json
-{
-  "success": true,
-  "message": "Withdraw completed successfully.",
-  "transactionId": 12,
-  "balance": 10500.50
-}
-```
-
-餘額不足回應：
-
-```json
-{
-  "success": false,
-  "message": "Insufficient balance.",
-  "transactionId": null,
-  "balance": 300.00
-}
-```
-
-### Transfers
-
-#### 6. 轉帳
-
-`POST /api/transfers`
-
-此 API 會呼叫 SQL Server stored procedure `TransferMoney`。
-
-Request Body：
-
-```json
-{
-  "fromAccountId": 1,
-  "toAccountId": 2,
-  "amount": 500.00
-}
-```
-
-成功回應：
-
-```json
-{
-  "resultCode": 0,
-  "resultMessage": "Transfer successful."
-}
-```
-
-失敗回應：
-
-```json
-{
-  "resultCode": 1001,
-  "resultMessage": "Insufficient balance."
-}
-```
-
-#### 7. 查詢單筆轉帳紀錄
-
-`GET /api/transfers/{transferId}`
-
-範例：
-
-```http
-GET /api/transfers/1
-```
-
-成功回應：
-
-```json
-{
-  "transferId": 1,
-  "fromAccountId": 1,
-  "toAccountId": 2,
-  "amount": 500.00,
-  "createdAt": "2026-04-17T10:20:00"
-}
-```
-
-### Transactions
-
-#### 8. 查詢單筆交易明細
-
-`GET /api/transactions/{transactionId}`
-
-範例：
-
-```http
-GET /api/transactions/1
-```
-
-成功回應：
-
-```json
-{
-  "transactionId": 1,
-  "accountId": 1,
-  "type": "Deposit",
-  "amount": 1000.00,
-  "status": "Success",
-  "createdAt": "2026-04-17T10:10:00"
-}
-```
-
-## 測試方式
-
-專案根目錄已提供 `FinanceAPI.http`，可直接在 IDE 中送出測試請求。
-
-也可以使用 Swagger：
-
-- `GET /api/accounts/{accountId}`
-- `GET /api/accounts/{accountId}/balance`
-- `GET /api/accounts/{accountId}/transactions`
-- `POST /api/accounts/{accountId}/deposit`
-- `POST /api/accounts/{accountId}/withdraw`
-- `POST /api/transfers`
-- `GET /api/transfers/{transferId}`
-- `GET /api/transactions/{transactionId}`
-
-## 注意事項
-
-- `TransferMoney` stored procedure 需先存在於 SQL Server 中
-- `Transactions.TransactionId` 與 `TransferDetails.TransferId` 建議使用 `IDENTITY(1,1)`
-- 此版本為簡化 ATM demo，存款與提款目前由 EF Core 直接寫入資料庫
-- 若後續要提升一致性，建議將存款與提款也改為 stored procedure 或 transaction 保護
+1. React Frontend
+2. JWT Login
+3. Redis
+4. Kafka
+5. Docker
+6. AWS
