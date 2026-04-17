@@ -33,13 +33,17 @@
 
 ## 執行方式
 
-先確認 `appsettings.json` 內的 SQL Server 連線字串正確：
+請先確認 `appsettings.json` 或 `appsettings.Development.json` 內的 SQL Server 連線字串正確。
+
+建議公開 repo 使用通用設定，例如：
 
 ```json
 "ConnectionStrings": {
-  "DefaultConnection": "Server=DESKTOP-E2M202R\\SQLEXPRESS;Database=Finance;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
+  "DefaultConnection": "Server=localhost\\SQLEXPRESS;Database=Finance;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
 }
 ```
+
+如果你是本機開發，可以把自己的實際連線字串放在 `appsettings.Development.json`。
 
 在專案根目錄執行：
 
@@ -47,7 +51,7 @@
 dotnet run
 ```
 
-或開發時使用：
+開發時也可以使用：
 
 ```powershell
 dotnet watch run
@@ -331,5 +335,6 @@ GET /api/transactions/1
 ## 注意事項
 
 - `TransferMoney` stored procedure 需先存在於 SQL Server 中
+- `Transactions.TransactionId` 與 `TransferDetails.TransferId` 建議使用 `IDENTITY(1,1)`
 - 此版本為簡化 ATM demo，存款與提款目前由 EF Core 直接寫入資料庫
-- 若後續要提升一致性，存款與提款考慮也改為 stored procedure 或 transaction 保護
+- 若後續要提升一致性，建議將存款與提款也改為 stored procedure 或 transaction 保護
