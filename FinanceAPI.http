@@ -1,0 +1,55 @@
+@FinanceAPI_HostAddress = http://localhost:5097
+
+GET {{FinanceAPI_HostAddress}}/api/accounts/1
+Accept: application/json
+
+###
+
+GET {{FinanceAPI_HostAddress}}/api/accounts/1/balance
+Accept: application/json
+
+###
+
+GET {{FinanceAPI_HostAddress}}/api/accounts/1/transactions
+Accept: application/json
+
+###
+
+POST {{FinanceAPI_HostAddress}}/api/accounts/1/deposit
+Content-Type: application/json
+
+{
+  "amount": 1000.00
+}
+
+###
+
+POST {{FinanceAPI_HostAddress}}/api/accounts/1/withdraw
+Content-Type: application/json
+
+{
+  "amount": 500.00
+}
+
+###
+
+POST {{FinanceAPI_HostAddress}}/api/transfers
+Content-Type: application/json
+
+{
+  "fromAccountId": 1,
+  "toAccountId": 2,
+  "amount": 500.00
+}
+
+###
+
+GET {{FinanceAPI_HostAddress}}/api/transfers/1
+Accept: application/json
+
+###
+
+GET {{FinanceAPI_HostAddress}}/api/transactions/1
+Accept: application/json
+
+###
