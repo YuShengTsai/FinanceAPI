@@ -9,6 +9,7 @@ obj/
 
 appsettings.Development.json
 LEARNING_JOURNEY.md
+REACT_TYPESCRIPT_GUIDE.md
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
