@@ -27,4 +27,11 @@ public class TransactionsController : ControllerBase
 
         return Ok(transaction);
     }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactions([FromQuery] int? accountId, [FromQuery] string? type)
+    {
+        var transactions = await _transactionService.GetTransactionsAsync(accountId, type);
+        return Ok(transactions);
+    }
 }

@@ -40,4 +40,14 @@ public class TransfersController : ControllerBase
 
         return Ok(transferDetail);
     }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<TransferDetail>>> GetTransferDetails(
+        [FromQuery] int? accountId,
+        [FromQuery] int? fromAccountId,
+        [FromQuery] int? toAccountId)
+    {
+        var transferDetails = await _transferService.GetTransferDetailsAsync(accountId, fromAccountId, toAccountId);
+        return Ok(transferDetails);
+    }
 }

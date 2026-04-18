@@ -59,4 +59,32 @@ public class TransferService : ITransferService
             .AsNoTracking()
             .FirstOrDefaultAsync(transfer => transfer.TransferId == transferId);
     }
+
+    public async Task<IEnumerable<TransferDetail>> GetTransferDetailsAsync(int? accountId, int? fromAccountId, int? toAccountId)
+    {
+        var query = _context.TransferDetails
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (accountId.HasValue)
+        {
+            query = query.Where(transfer =>
+                transfer.FromAccountId == accountId.Value || transfer.ToAccountId == accountId.Value);
+        }
+
+        if (fromAccountId.HasValue)
+        {
+            query = query.Where(transfer => transfer.FromAccountId == fromAccountId.Value);
+        }
+
+        if (toAccountId.HasValue)
+        {
+            query = query.Where(transfer => transfer.ToAccountId == toAccountId.Value);
+        }
+
+        return await query
+            .OrderByDescending(transfer => transfer.CreatedAt)
+            .ThenByDescending(transfer => transfer.TransferId)
+            .ToListAsync();
+    }
 }

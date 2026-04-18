@@ -1,0 +1,76 @@
+:root {
+  font-family:
+    'Segoe UI',
+    'Noto Sans TC',
+    'PingFang TC',
+    sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #1c1917;
+  background:
+    radial-gradient(circle at top left, rgba(251, 191, 36, 0.2), transparent 26%),
+    radial-gradient(circle at bottom right, rgba(249, 115, 22, 0.15), transparent 24%),
+    linear-gradient(180deg, #fff7ed 0%, #fffbf5 42%, #f8fafc 100%);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --bs-primary: #9a3412;
+  --bs-primary-rgb: 154, 52, 18;
+  --bs-warning: #f59e0b;
+  --bs-warning-rgb: 245, 158, 11;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+body,
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+body {
+  color: #1c1917;
+}
+
+a {
+  color: inherit;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+.btn-primary {
+  --bs-btn-bg: #9a3412;
+  --bs-btn-border-color: #9a3412;
+  --bs-btn-hover-bg: #7c2d12;
+  --bs-btn-hover-border-color: #7c2d12;
+  --bs-btn-active-bg: #7c2d12;
+  --bs-btn-active-border-color: #7c2d12;
+}
+
+.btn-warning {
+  --bs-btn-color: #1c1917;
+}
+
+.form-control:focus {
+  border-color: rgba(154, 52, 18, 0.4);
+  box-shadow: 0 0 0 0.25rem rgba(154, 52, 18, 0.15);
+}
