@@ -25,6 +25,8 @@
 
 - Vite 前端啟動與建置流程
 - 前端路由結構
+- JWT 登入流程
+- 前端受保護路由
 - 首頁 dashboard
 - 帳戶服務頁
 - 轉帳作業頁
@@ -56,6 +58,22 @@ VITE_API_BASE_URL=http://localhost:5097
 ```
 
 若後端實際執行於其他網址，請同步調整此值。
+
+## 登入資料來源
+
+目前登入流程已改為讀取後端 `Users` 資料表。
+
+目前欄位如下：
+
+```text
+UserId int
+Username nvarchar
+PasswordHash nvarchar
+Role nvarchar
+CreatedAt datetime
+```
+
+目前為開發階段，`PasswordHash` 暫時以明文方式比對。後續建議升級為正式的密碼雜湊機制。
 
 ### 4. 啟動前端開發伺服器
 

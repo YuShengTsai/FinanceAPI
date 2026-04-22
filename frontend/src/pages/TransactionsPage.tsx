@@ -1,20 +1,26 @@
 import { useState } from 'react'
+import { useAccessibleAccounts } from '../hooks/useAccessibleAccounts'
 import { SectionCard } from '../components/SectionCard'
 import { getTransactions } from '../services/transactionService'
 import type { Transaction } from '../types/banking'
+import { formatTransactionType } from '../utils/transactionFormat'
 
 export function TransactionsPage() {
-  const [accountIdInput, setAccountIdInput] = useState('1')
+  const { accounts, isLoading: isAccountsLoading, errorMessage: accountsErrorMessage } =
+    useAccessibleAccounts()
+  const [accountIdInput, setAccountIdInput] = useState('')
   const [type, setType] = useState('All')
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [errorMessage, setErrorMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
+  const effectiveErrorMessage = errorMessage || accountsErrorMessage
+
   async function handleSearch() {
     const accountId = Number(accountIdInput)
 
     if (accountId <= 0) {
-      setErrorMessage('請輸入有效的帳戶 ID。')
+      setErrorMessage('請選擇帳戶。')
       return
     }
 
@@ -34,19 +40,25 @@ export function TransactionsPage() {
 
   return (
     <main className="d-grid gap-4">
-      <SectionCard title="交易明細查詢" description="依帳戶 ID 查詢交易列表，並可選擇交易類型。">
+      <SectionCard title="交易明細查詢" description="可依帳戶與交易類型查詢交易列表。">
         <div className="row g-3">
           <div className="col-12 col-lg-4">
-            <label className="form-label fw-semibold">Account ID</label>
-            <input
-              className="form-control form-control-lg"
-              type="number"
-              min="1"
+            <label className="form-label fw-semibold">帳戶</label>
+            <select
+              className="form-select form-select-lg"
               value={accountIdInput}
               onChange={(event) => setAccountIdInput(event.target.value)}
-              placeholder="例如 1"
-            />
+              disabled={isAccountsLoading || accounts.length === 0}
+            >
+              <option value="">請選擇帳戶</option>
+              {accounts.map((accountItem) => (
+                <option key={accountItem.accountId} value={accountItem.accountId}>
+                  {accountItem.accountNumber} | {accountItem.currency} | {accountItem.balance.toLocaleString()}
+                </option>
+              ))}
+            </select>
           </div>
+
           <div className="col-12 col-lg-4">
             <label className="form-label fw-semibold">交易類型</label>
             <select
@@ -55,22 +67,23 @@ export function TransactionsPage() {
               onChange={(event) => setType(event.target.value)}
             >
               <option value="All">全部</option>
-              <option value="Deposit">Deposit</option>
-              <option value="Withdraw">Withdraw</option>
-              <option value="Transfer">Transfer</option>
+              <option value="Deposit">存款</option>
+              <option value="Withdraw">提款</option>
+              <option value="Transfer">轉帳</option>
             </select>
           </div>
+
           <div className="col-12 col-lg-4 d-flex align-items-end">
             <button className="btn btn-primary btn-lg px-4" type="button" onClick={handleSearch}>
-              {isLoading ? '查詢中...' : '查詢交易列表'}
+              {isLoading ? '查詢中...' : '查詢交易'}
             </button>
           </div>
         </div>
       </SectionCard>
 
-      {errorMessage ? (
+      {effectiveErrorMessage ? (
         <section className="alert alert-danger shadow-sm mb-0" role="alert">
-          <p className="mb-0">{errorMessage}</p>
+          <p className="mb-0">{effectiveErrorMessage}</p>
         </section>
       ) : null}
 
@@ -80,12 +93,12 @@ export function TransactionsPage() {
             <table className="table align-middle mb-0">
               <thead>
                 <tr>
-                  <th>Transaction ID</th>
-                  <th>Account ID</th>
-                  <th>Type</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Created At</th>
+                  <th>交易編號</th>
+                  <th>帳戶 ID</th>
+                  <th>交易類型</th>
+                  <th>金額</th>
+                  <th>狀態</th>
+                  <th>建立時間</th>
                 </tr>
               </thead>
               <tbody>
@@ -93,7 +106,7 @@ export function TransactionsPage() {
                   <tr key={transaction.transactionId}>
                     <td>{transaction.transactionId}</td>
                     <td>{transaction.accountId}</td>
-                    <td>{transaction.type}</td>
+                    <td>{formatTransactionType(transaction.type)}</td>
                     <td>{transaction.amount.toLocaleString()}</td>
                     <td>{transaction.status}</td>
                     <td>{new Date(transaction.createdAt).toLocaleString()}</td>

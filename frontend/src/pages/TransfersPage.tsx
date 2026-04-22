@@ -46,10 +46,10 @@ export function TransfersPage() {
 
   return (
     <main className="d-grid gap-4">
-      <SectionCard title="轉帳紀錄查詢" description="可依帳戶 ID、轉出帳戶 ID 或轉入帳戶 ID 查詢轉帳列表。">
+      <SectionCard title="轉帳紀錄查詢" description="可依帳戶或轉帳條件查詢轉帳列表。">
         <div className="row g-3">
           <div className="col-12 col-lg-4">
-            <label className="form-label fw-semibold">Account ID</label>
+            <label className="form-label fw-semibold">帳戶 ID</label>
             <input
               className="form-control form-control-lg"
               type="number"
@@ -59,7 +59,7 @@ export function TransfersPage() {
             />
           </div>
           <div className="col-12 col-lg-4">
-            <label className="form-label fw-semibold">From Account ID</label>
+            <label className="form-label fw-semibold">轉出帳戶 ID</label>
             <input
               className="form-control form-control-lg"
               type="number"
@@ -69,7 +69,7 @@ export function TransfersPage() {
             />
           </div>
           <div className="col-12 col-lg-4">
-            <label className="form-label fw-semibold">To Account ID</label>
+            <label className="form-label fw-semibold">轉入帳戶 ID</label>
             <input
               className="form-control form-control-lg"
               type="number"
@@ -80,7 +80,7 @@ export function TransfersPage() {
           </div>
           <div className="col-12 d-flex align-items-end">
             <button className="btn btn-primary btn-lg px-4" type="button" onClick={handleSearch}>
-              {isLoading ? '查詢中...' : '查詢轉帳列表'}
+              {isLoading ? '查詢中...' : '查詢轉帳紀錄'}
             </button>
           </div>
         </div>
@@ -98,11 +98,11 @@ export function TransfersPage() {
             <table className="table align-middle mb-0">
               <thead>
                 <tr>
-                  <th>Transfer ID</th>
-                  <th>From Account ID</th>
-                  <th>To Account ID</th>
-                  <th>Amount</th>
-                  <th>Created At</th>
+                  <th>轉帳編號</th>
+                  <th>轉出帳戶 ID</th>
+                  <th>轉入帳戶 ID</th>
+                  <th>金額</th>
+                  <th>建立時間</th>
                 </tr>
               </thead>
               <tbody>
@@ -119,7 +119,7 @@ export function TransfersPage() {
             </table>
           </div>
         ) : (
-          <p className="text-secondary mb-0">查詢後會在此顯示符合條件的轉帳列表。</p>
+          <p className="text-secondary mb-0">查詢後會在此顯示符合條件的轉帳紀錄。</p>
         )}
       </SectionCard>
     </main>

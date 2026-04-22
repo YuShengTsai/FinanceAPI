@@ -7,6 +7,10 @@ import type {
   Transaction,
 } from '../types/banking'
 
+export function getAccessibleAccounts() {
+  return requestJson<Account[]>('/api/accounts')
+}
+
 export function getAccount(accountId: number) {
   return requestJson<Account>(`/api/accounts/${accountId}`)
 }

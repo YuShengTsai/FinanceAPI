@@ -1,30 +1,89 @@
 @FinanceAPI_HostAddress = http://localhost:5097
+@ContentType = application/json
 
 ### ========================
-### Happy Path
+### Authentication
 ### ========================
+
+### 一般使用者登入
+# @name loginUser
+POST {{FinanceAPI_HostAddress}}/api/auth/login
+Content-Type: {{ContentType}}
+
+{
+  "username": "user1",
+  "password": "123456"
+}
+
+> {%
+client.global.set("userToken", response.body.accessToken);
+%}
+
+###
+
+### 管理者登入
+# @name loginAdmin
+POST {{FinanceAPI_HostAddress}}/api/auth/login
+Content-Type: {{ContentType}}
+
+{
+  "username": "admin",
+  "password": "123456"
+}
+
+> {%
+client.global.set("adminToken", response.body.accessToken);
+%}
+
+###
+
+### 登入失敗
+POST {{FinanceAPI_HostAddress}}/api/auth/login
+Content-Type: {{ContentType}}
+
+{
+  "username": "wrong-user",
+  "password": "wrong-password"
+}
+
+###
+
+### ========================
+### User Happy Path
+### ========================
+
+### 查詢可存取帳戶清單
+GET {{FinanceAPI_HostAddress}}/api/accounts
+Accept: application/json
+Authorization: Bearer {{userToken}}
+
+###
 
 ### 查詢帳戶資料
 GET {{FinanceAPI_HostAddress}}/api/accounts/1
 Accept: application/json
+Authorization: Bearer {{userToken}}
 
 ###
 
-### 查詢餘額
+### 查詢帳戶餘額
 GET {{FinanceAPI_HostAddress}}/api/accounts/1/balance
 Accept: application/json
+Authorization: Bearer {{userToken}}
 
 ###
 
 ### 查詢帳戶交易明細
 GET {{FinanceAPI_HostAddress}}/api/accounts/1/transactions
 Accept: application/json
+Authorization: Bearer {{userToken}}
 
 ###
 
-### 存款成功
+### 存款
 POST {{FinanceAPI_HostAddress}}/api/accounts/1/deposit
-Content-Type: application/json
+Content-Type: {{ContentType}}
+Authorization: Bearer {{userToken}}
 
 {
   "amount": 1000.00
@@ -32,9 +91,10 @@ Content-Type: application/json
 
 ###
 
-### 提款成功
+### 提款
 POST {{FinanceAPI_HostAddress}}/api/accounts/1/withdraw
-Content-Type: application/json
+Content-Type: {{ContentType}}
+Authorization: Bearer {{userToken}}
 
 {
   "amount": 500.00
@@ -42,9 +102,10 @@ Content-Type: application/json
 
 ###
 
-### 轉帳成功
+### 轉帳
 POST {{FinanceAPI_HostAddress}}/api/transfers
-Content-Type: application/json
+Content-Type: {{ContentType}}
+Authorization: Bearer {{userToken}}
 
 {
   "fromAccountId": 1,
@@ -54,15 +115,87 @@ Content-Type: application/json
 
 ###
 
-### 查詢單筆轉帳紀錄
-GET {{FinanceAPI_HostAddress}}/api/transfers/1
+### 查詢單筆交易紀錄
+GET {{FinanceAPI_HostAddress}}/api/transactions/1
+Accept: application/json
+Authorization: Bearer {{userToken}}
+
+###
+
+### 條件查詢交易紀錄
+GET {{FinanceAPI_HostAddress}}/api/transactions?accountId=1&type=Deposit
+Accept: application/json
+Authorization: Bearer {{userToken}}
+
+###
+
+### ========================
+### Authorization Tests
+### ========================
+
+### 未登入查詢帳戶
+GET {{FinanceAPI_HostAddress}}/api/accounts/1
 Accept: application/json
 
 ###
 
-### 查詢單筆交易明細
-GET {{FinanceAPI_HostAddress}}/api/transactions/1
+### 一般使用者查詢不屬於自己的帳戶
+GET {{FinanceAPI_HostAddress}}/api/accounts/999
 Accept: application/json
+Authorization: Bearer {{userToken}}
+
+###
+
+### 一般使用者查詢其他帳戶的交易紀錄
+GET {{FinanceAPI_HostAddress}}/api/transactions?accountId=999
+Accept: application/json
+Authorization: Bearer {{userToken}}
+
+###
+
+### 一般使用者查詢轉帳紀錄列表
+GET {{FinanceAPI_HostAddress}}/api/transfers?accountId=1
+Accept: application/json
+Authorization: Bearer {{userToken}}
+
+###
+
+### 一般使用者查詢單筆轉帳紀錄
+GET {{FinanceAPI_HostAddress}}/api/transfers/1
+Accept: application/json
+Authorization: Bearer {{userToken}}
+
+###
+
+### ========================
+### Admin Happy Path
+### ========================
+
+### 管理者查詢所有帳戶
+GET {{FinanceAPI_HostAddress}}/api/accounts
+Accept: application/json
+Authorization: Bearer {{adminToken}}
+
+###
+
+### 管理者查詢交易列表
+GET {{FinanceAPI_HostAddress}}/api/transactions?accountId=1
+Accept: application/json
+Authorization: Bearer {{adminToken}}
+
+###
+
+### 管理者查詢轉帳紀錄列表
+GET {{FinanceAPI_HostAddress}}/api/transfers?accountId=1
+Accept: application/json
+Authorization: Bearer {{adminToken}}
+
+###
+
+### 管理者查詢單筆轉帳紀錄
+GET {{FinanceAPI_HostAddress}}/api/transfers/1
+Accept: application/json
+Authorization: Bearer {{adminToken}}
 
 ###
 
@@ -70,9 +203,10 @@ Accept: application/json
 ### Validation Tests
 ### ========================
 
-### 存款金額為 0
+### 存款金額等於 0
 POST {{FinanceAPI_HostAddress}}/api/accounts/1/deposit
-Content-Type: application/json
+Content-Type: {{ContentType}}
+Authorization: Bearer {{userToken}}
 
 {
   "amount": 0
@@ -82,7 +216,8 @@ Content-Type: application/json
 
 ### 存款金額小於 0
 POST {{FinanceAPI_HostAddress}}/api/accounts/1/deposit
-Content-Type: application/json
+Content-Type: {{ContentType}}
+Authorization: Bearer {{userToken}}
 
 {
   "amount": -100
@@ -90,9 +225,10 @@ Content-Type: application/json
 
 ###
 
-### 提款金額為 0
+### 提款金額等於 0
 POST {{FinanceAPI_HostAddress}}/api/accounts/1/withdraw
-Content-Type: application/json
+Content-Type: {{ContentType}}
+Authorization: Bearer {{userToken}}
 
 {
   "amount": 0
@@ -100,9 +236,10 @@ Content-Type: application/json
 
 ###
 
-### 轉帳給自己
+### 轉帳來源與目標相同
 POST {{FinanceAPI_HostAddress}}/api/transfers
-Content-Type: application/json
+Content-Type: {{ContentType}}
+Authorization: Bearer {{userToken}}
 
 {
   "fromAccountId": 1,
@@ -112,9 +249,10 @@ Content-Type: application/json
 
 ###
 
-### 轉帳金額為 0
+### 轉帳金額等於 0
 POST {{FinanceAPI_HostAddress}}/api/transfers
-Content-Type: application/json
+Content-Type: {{ContentType}}
+Authorization: Bearer {{userToken}}
 
 {
   "fromAccountId": 1,
@@ -126,7 +264,8 @@ Content-Type: application/json
 
 ### 轉帳帳戶編號無效
 POST {{FinanceAPI_HostAddress}}/api/transfers
-Content-Type: application/json
+Content-Type: {{ContentType}}
+Authorization: Bearer {{userToken}}
 
 {
   "fromAccountId": 0,
@@ -136,9 +275,10 @@ Content-Type: application/json
 
 ###
 
-### 轉帳金額型別錯誤
+### 轉帳金額格式錯誤
 POST {{FinanceAPI_HostAddress}}/api/transfers
-Content-Type: application/json
+Content-Type: {{ContentType}}
+Authorization: Bearer {{userToken}}
 
 {
   "fromAccountId": 1,
@@ -152,27 +292,31 @@ Content-Type: application/json
 ### Business Error Tests
 ### ========================
 
-### 查詢不存在的帳戶資料
+### 查詢不存在的帳戶
 GET {{FinanceAPI_HostAddress}}/api/accounts/999999
 Accept: application/json
+Authorization: Bearer {{adminToken}}
 
 ###
 
-### 查詢不存在帳戶的餘額
+### 查詢不存在的餘額
 GET {{FinanceAPI_HostAddress}}/api/accounts/999999/balance
 Accept: application/json
+Authorization: Bearer {{adminToken}}
 
 ###
 
-### 查詢不存在帳戶的交易明細
+### 查詢不存在的帳戶交易
 GET {{FinanceAPI_HostAddress}}/api/accounts/999999/transactions
 Accept: application/json
+Authorization: Bearer {{adminToken}}
 
 ###
 
 ### 對不存在的帳戶存款
 POST {{FinanceAPI_HostAddress}}/api/accounts/999999/deposit
-Content-Type: application/json
+Content-Type: {{ContentType}}
+Authorization: Bearer {{adminToken}}
 
 {
   "amount": 1000.00
@@ -182,7 +326,8 @@ Content-Type: application/json
 
 ### 對不存在的帳戶提款
 POST {{FinanceAPI_HostAddress}}/api/accounts/999999/withdraw
-Content-Type: application/json
+Content-Type: {{ContentType}}
+Authorization: Bearer {{adminToken}}
 
 {
   "amount": 1000.00
@@ -192,7 +337,8 @@ Content-Type: application/json
 
 ### 提款超過餘額
 POST {{FinanceAPI_HostAddress}}/api/accounts/1/withdraw
-Content-Type: application/json
+Content-Type: {{ContentType}}
+Authorization: Bearer {{userToken}}
 
 {
   "amount": 99999999.00
@@ -203,11 +349,12 @@ Content-Type: application/json
 ### 查詢不存在的轉帳紀錄
 GET {{FinanceAPI_HostAddress}}/api/transfers/999999
 Accept: application/json
+Authorization: Bearer {{adminToken}}
 
 ###
 
-### 查詢不存在的交易明細
+### 查詢不存在的交易紀錄
 GET {{FinanceAPI_HostAddress}}/api/transactions/999999
 Accept: application/json
+Authorization: Bearer {{adminToken}}
 
-###

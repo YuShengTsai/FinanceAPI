@@ -14,6 +14,23 @@ public class AccountService : IAccountService
         _context = context;
     }
 
+    public async Task<List<Account>> GetAccountsAsync(IEnumerable<int>? accountIds = null)
+    {
+        var query = _context.Accounts
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (accountIds is not null)
+        {
+            var accountIdList = accountIds.Distinct().ToList();
+            query = query.Where(account => accountIdList.Contains(account.AccountId));
+        }
+
+        return await query
+            .OrderBy(account => account.AccountId)
+            .ToListAsync();
+    }
+
     public async Task<Account?> GetAccountAsync(int accountId)
     {
         return await _context.Accounts
