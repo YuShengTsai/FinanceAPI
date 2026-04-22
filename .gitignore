@@ -16,3 +16,4 @@ frontend/.vite/
 frontend/.env
 frontend/.env.local
 backend/artifacts/
+docker_redis.txt

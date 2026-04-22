@@ -1,5 +1,6 @@
 using System.Data;
 using FinanceAPI.Data;
+using FinanceAPI.Infrastructure.Cache;
 using FinanceAPI.Models;
 using FinanceAPI.Services.Interfaces;
 using Microsoft.Data.SqlClient;
@@ -10,10 +11,12 @@ namespace FinanceAPI.Services;
 public class TransferService : ITransferService
 {
     private readonly AppDbContext _context;
+    private readonly ICacheService _cacheService;
 
-    public TransferService(AppDbContext context)
+    public TransferService(AppDbContext context, ICacheService cacheService)
     {
         _context = context;
+        _cacheService = cacheService;
     }
 
     public async Task<TransferResult> TransferMoneyAsync(TransferRequest request)
@@ -46,11 +49,22 @@ public class TransferService : ITransferService
             "EXEC TransferMoney @FromAccountId, @ToAccountId, @Amount, @ResultCode OUTPUT, @ResultMessage OUTPUT",
             parameters);
 
-        return new TransferResult
+        var result = new TransferResult
         {
             ResultCode = resultCodeParameter.Value is DBNull ? -1 : (int)resultCodeParameter.Value,
             ResultMessage = resultMessageParameter.Value?.ToString() ?? string.Empty
         };
+
+        if (result.ResultCode == 0)
+        {
+            await _cacheService.RemoveAsync(
+                CacheKeys.AccountBalance(request.FromAccountId),
+                CacheKeys.AccountTransactions(request.FromAccountId),
+                CacheKeys.AccountBalance(request.ToAccountId),
+                CacheKeys.AccountTransactions(request.ToAccountId));
+        }
+
+        return result;
     }
 
     public async Task<TransferDetail?> GetTransferDetailAsync(int transferId)
