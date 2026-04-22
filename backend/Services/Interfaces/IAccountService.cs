@@ -4,6 +4,8 @@ namespace FinanceAPI.Services.Interfaces;
 
 public interface IAccountService
 {
+    Task<List<Account>> GetAccountsAsync(IEnumerable<int>? accountIds = null);
+
     Task<Account?> GetAccountAsync(int accountId);
 
     Task<BalanceResponse?> GetBalanceAsync(int accountId);

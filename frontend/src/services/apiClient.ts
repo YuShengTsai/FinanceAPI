@@ -1,3 +1,5 @@
+import { getStoredAuthSession } from './authStorage'
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5097'
 
 type ApiErrorPayload = {
@@ -7,9 +9,11 @@ type ApiErrorPayload = {
 }
 
 export async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
+  const session = getStoredAuthSession()
   const response = await fetch(`${API_BASE_URL}${path}`, {
     headers: {
       'Content-Type': 'application/json',
+      ...(session?.accessToken ? { Authorization: `Bearer ${session.accessToken}` } : {}),
       ...(init?.headers ?? {}),
     },
     ...init,

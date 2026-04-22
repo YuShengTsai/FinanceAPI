@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
     }
 
     public DbSet<Account> Accounts => Set<Account>();
+    public DbSet<User> Users => Set<User>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<TransferDetail> TransferDetails => Set<TransferDetail>();
 
@@ -40,6 +41,29 @@ public class AppDbContext : DbContext
                 .HasColumnType("decimal(18,2)");
 
             entity.Property(account => account.CreatedAt)
+                .HasColumnType("datetime")
+                .HasDefaultValueSql("GETDATE()");
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.ToTable("Users");
+
+            entity.HasKey(user => user.UserId);
+
+            entity.Property(user => user.UserId)
+                .ValueGeneratedOnAdd();
+
+            entity.Property(user => user.Username)
+                .IsRequired();
+
+            entity.Property(user => user.PasswordHash)
+                .IsRequired();
+
+            entity.Property(user => user.Role)
+                .IsRequired();
+
+            entity.Property(user => user.CreatedAt)
                 .HasColumnType("datetime")
                 .HasDefaultValueSql("GETDATE()");
         });
