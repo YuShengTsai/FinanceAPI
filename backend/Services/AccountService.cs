@@ -1,5 +1,7 @@
 using FinanceAPI.Data;
+using FinanceAPI.Infrastructure.Cache;
 using FinanceAPI.Models;
+using FinanceAPI.Options;
 using FinanceAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,10 +10,14 @@ namespace FinanceAPI.Services;
 public class AccountService : IAccountService
 {
     private readonly AppDbContext _context;
+    private readonly ICacheService _cacheService;
+    private readonly RedisOptions _redisOptions;
 
-    public AccountService(AppDbContext context)
+    public AccountService(AppDbContext context, ICacheService cacheService, Microsoft.Extensions.Options.IOptions<RedisOptions> redisOptions)
     {
         _context = context;
+        _cacheService = cacheService;
+        _redisOptions = redisOptions.Value;
     }
 
     public async Task<List<Account>> GetAccountsAsync(IEnumerable<int>? accountIds = null)
@@ -40,7 +46,15 @@ public class AccountService : IAccountService
 
     public async Task<BalanceResponse?> GetBalanceAsync(int accountId)
     {
-        return await _context.Accounts
+        var cacheKey = CacheKeys.AccountBalance(accountId);
+        var cachedBalance = await _cacheService.GetAsync<BalanceResponse>(cacheKey);
+
+        if (cachedBalance is not null)
+        {
+            return cachedBalance;
+        }
+
+        var balance = await _context.Accounts
             .AsNoTracking()
             .Where(account => account.AccountId == accountId)
             .Select(account => new BalanceResponse
@@ -51,16 +65,41 @@ public class AccountService : IAccountService
                 Currency = account.Currency
             })
             .FirstOrDefaultAsync();
+
+        if (balance is not null)
+        {
+            await _cacheService.SetAsync(
+                cacheKey,
+                balance,
+                TimeSpan.FromMinutes(_redisOptions.BalanceCacheMinutes));
+        }
+
+        return balance;
     }
 
     public async Task<List<Transaction>> GetAccountTransactionsAsync(int accountId)
     {
-        return await _context.Transactions
+        var cacheKey = CacheKeys.AccountTransactions(accountId);
+        var cachedTransactions = await _cacheService.GetAsync<List<Transaction>>(cacheKey);
+
+        if (cachedTransactions is not null)
+        {
+            return cachedTransactions;
+        }
+
+        var transactions = await _context.Transactions
             .AsNoTracking()
             .Where(transaction => transaction.AccountId == accountId)
             .OrderByDescending(transaction => transaction.CreatedAt)
             .ThenByDescending(transaction => transaction.TransactionId)
             .ToListAsync();
+
+        await _cacheService.SetAsync(
+            cacheKey,
+            transactions,
+            TimeSpan.FromMinutes(_redisOptions.AccountTransactionsCacheMinutes));
+
+        return transactions;
     }
 
     public async Task<OperationResult> DepositAsync(int accountId, decimal amount)
@@ -89,6 +128,7 @@ public class AccountService : IAccountService
 
         _context.Transactions.Add(transaction);
         await _context.SaveChangesAsync();
+        await InvalidateAccountCacheAsync(accountId);
 
         return new OperationResult
         {
@@ -135,6 +175,7 @@ public class AccountService : IAccountService
 
         _context.Transactions.Add(transaction);
         await _context.SaveChangesAsync();
+        await InvalidateAccountCacheAsync(accountId);
 
         return new OperationResult
         {
@@ -143,5 +184,12 @@ public class AccountService : IAccountService
             TransactionId = transaction.TransactionId,
             Balance = account.Balance
         };
+    }
+
+    private Task InvalidateAccountCacheAsync(int accountId)
+    {
+        return _cacheService.RemoveAsync(
+            CacheKeys.AccountBalance(accountId),
+            CacheKeys.AccountTransactions(accountId));
     }
 }
